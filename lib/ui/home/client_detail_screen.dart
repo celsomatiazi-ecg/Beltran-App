@@ -131,11 +131,7 @@ class _ClientDetailScreenState extends State<ClientDetailScreen>
         actions: [
           IconButton(
             onPressed: () {
-              Navigator.pushNamed(
-                context,
-                "/qr_code",
-                arguments: client.secret,
-              );
+              Navigator.pushNamed(context, "/qr_code", arguments: client);
             },
             icon: Icon(Icons.qr_code),
           ),

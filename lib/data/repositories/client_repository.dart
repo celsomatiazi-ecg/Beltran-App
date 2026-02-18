@@ -9,18 +9,18 @@ import '../../services/secure_storage_service.dart';
 import '../constants/http_constants.dart';
 
 final class ClientRepository {
-  final IHttpClient client;
-  final IHttpInterceptor httpInterceptor;
+  final IHttpClient _client;
+  final IHttpInterceptor _httpInterceptor;
   final ISecureStorageService _storage;
 
-  ClientRepository(this.client, this.httpInterceptor, this._storage);
+  ClientRepository(this._client, this._httpInterceptor, this._storage);
 
   List<ClientModel> clients = [];
 
   Future getClients() async {
     try {
-      return await httpInterceptor.handleAuth((headers) async {
-        return client.get(url: HttpConstants.clients, headers: headers);
+      return await _httpInterceptor.handleAuth((headers) async {
+        return _client.get(url: HttpConstants.clients, headers: headers);
       });
     } catch (e, s) {
       log("GET CLIENTS REPO", error: e.toString(), stackTrace: s);
@@ -30,8 +30,8 @@ final class ClientRepository {
 
   Future saveClient(ClientModel clientData) async {
     try {
-      return await httpInterceptor.handleAuth((headers) async {
-        return client.post(
+      return await _httpInterceptor.handleAuth((headers) async {
+        return _client.post(
           url: HttpConstants.saveClient,
           headers: headers,
           body: clientData.toMap(),
@@ -45,8 +45,8 @@ final class ClientRepository {
 
   Future getClientCode(ClientModel clientData) async {
     try {
-      return await httpInterceptor.handleAuth((headers) async {
-        return client.post(
+      return await _httpInterceptor.handleAuth((headers) async {
+        return _client.post(
           url: HttpConstants.clientCode,
           headers: headers,
           body: {"id": clientData.id},

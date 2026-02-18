@@ -1,14 +1,15 @@
 import 'dart:developer';
 
-import 'package:beltran_adv/ui/utils/loader.dart';
+import 'package:beltran_adv/ui/utils/navigate_to_root.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:utils_tool_kit/utils_tool_kit.dart';
 
 import '/ui/app_constants/app_style.dart';
 import '/ui/app_controllers/user_controller.dart';
+import '/ui/utils/loader.dart';
+import '../../data/exceptions/exceptions.dart';
 import '../app_components/dialog_information.dart';
-import '../app_controllers/auth_controller.dart';
 
 class ChangePassword extends StatefulWidget {
   const ChangePassword({super.key});
@@ -18,9 +19,10 @@ class ChangePassword extends StatefulWidget {
 }
 
 class _ChangePasswordState extends State<ChangePassword>
-    with AppMessages, Loader {
+    with AppMessages, Loader, NavigateTo {
   final _formKey = GlobalKey<FormState>();
 
+  final _currentPasswordCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
 
   bool _hasLength = false;
@@ -56,6 +58,12 @@ class _ChangePasswordState extends State<ChangePassword>
     return !(value.length < 8);
   }
 
+  String? _confCurrentPasswordValidator(String? value) {
+    if (value == null || value.isEmpty) return "Campo obrigatório.";
+    if ((value.length < 5)) return "Senha inválida";
+    return null;
+  }
+
   String? _passwordValidator(String? value) {
     if (value == null || value.isEmpty) return "Campo obrigatório.";
 
@@ -66,7 +74,6 @@ class _ChangePasswordState extends State<ChangePassword>
         !_validateNumberLength(value)) {
       return "Senha inválida";
     }
-
     return null;
   }
 
@@ -83,22 +90,22 @@ class _ChangePasswordState extends State<ChangePassword>
   }
 
   Future<void> _savePassword() async {
-    var authCtrl = context.read<AuthController>();
-    var userCtrl = context.read<UserController>();
-
+    var ctrl = context.read<UserController>();
     try {
       showLoader();
-      await authCtrl
-          .savePassword(
-            identification: userCtrl.userData?.identification ?? "",
+      await ctrl
+          .updatePassword(
+            currentPassword: _currentPasswordCtrl.text,
             password: _passwordCtrl.text,
           )
           .whenComplete(() {
             hideLoader();
           });
       _navigateTo();
+    } on TokenException {
+      _expiredSessionDialog();
     } catch (e, s) {
-      log("Change password VIEW", error: e.toString(), stackTrace: s);
+      log("Update password VIEW", error: e.toString(), stackTrace: s);
       showCustomDialog(
         children: [
           DialogInformationWidget(
@@ -110,8 +117,28 @@ class _ChangePasswordState extends State<ChangePassword>
     }
   }
 
+  void _expiredSessionDialog() {
+    showCustomDialog(
+      children: [
+        DialogInformationWidget(
+          message: "Sua sessão expirou, por favor faça login novamente",
+          title: "Beltran",
+        ),
+      ],
+    ).then((_) {
+      navigateTo("/auth_login");
+    });
+  }
+
   void _navigateTo() {
     Navigator.pop(context);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _currentPasswordCtrl.dispose();
+    _passwordCtrl.dispose();
   }
 
   @override
@@ -136,7 +163,24 @@ class _ChangePasswordState extends State<ChangePassword>
                       ),
 
                       const SizedBox(height: 20),
-                      Text("Senha", style: AppStyle.titleLight),
+                      Text("Senha atual", style: AppStyle.titleLight),
+                      const SizedBox(height: 5),
+                      TextFormField(
+                        controller: _currentPasswordCtrl,
+                        onTapOutside: (_) {
+                          FocusScope.of(context).unfocus();
+                        },
+                        decoration: InputDecoration(
+                          hintText: "Digite sua senha atual",
+                          hintStyle: AppStyle.body.copyWith(
+                            color: Colors.black54,
+                          ),
+                        ),
+                        validator: _confCurrentPasswordValidator,
+                      ),
+
+                      const SizedBox(height: 20),
+                      Text("Nova senha", style: AppStyle.titleLight),
                       const SizedBox(height: 5),
                       TextFormField(
                         controller: _passwordCtrl,
@@ -149,25 +193,21 @@ class _ChangePasswordState extends State<ChangePassword>
                           } else {
                             _hasLength = true;
                           }
-
                           if (!_validateCapitalLetter(value)) {
                             _hasCapital = false;
                           } else {
                             _hasCapital = true;
                           }
-
                           if (!_validateNormalLetter(value)) {
                             _hasNormal = false;
                           } else {
                             _hasNormal = true;
                           }
-
                           if (!_validateNumber(value)) {
                             _hasSpecial = false;
                           } else {
                             _hasSpecial = true;
                           }
-
                           setState(() {});
                         },
                         decoration: InputDecoration(

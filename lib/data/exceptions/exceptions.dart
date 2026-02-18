@@ -19,7 +19,7 @@ String mapErrorToMessage(AppException exception) {
   return switch (exception) {
     NetworkException() => 'Sem conexão com a internet.',
     TimeoutException() => 'Tempo de requisição excedido.',
-    UnauthorizedException() => 'Sessão expirada. Faça login novamente.',
+    UnauthorizedException() => 'Credenciais inválidas!',
     TokenException() => "Sessão expirada. Faça login novamente.",
     ServerException(:final message) =>
       message?.isNotEmpty == true

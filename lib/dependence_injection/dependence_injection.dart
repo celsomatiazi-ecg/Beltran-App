@@ -55,8 +55,9 @@ class DependenceInjection extends StatelessWidget {
           ),
         ),
         ChangeNotifierProvider(
-          create: (context) =>
-              UserController(UserRepository(context.read(), context.read())),
+          create: (context) => UserController(
+            UserRepository(context.read(), context.read(), context.read()),
+          ),
         ),
 
         ChangeNotifierProvider(

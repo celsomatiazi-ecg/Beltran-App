@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:utils_tool_kit/utils_tool_kit.dart';
 
+import '/data/exceptions/exceptions.dart';
 import '/ui/app_constants/app_style.dart';
 import '/ui/app_controllers/user_controller.dart';
+import '/ui/utils/navigate_to_root.dart';
+import '../app_components/dialog_information.dart';
+import '../utils/loader.dart';
 
 class DeleteAccount extends StatefulWidget {
   const DeleteAccount({super.key});
@@ -12,7 +16,8 @@ class DeleteAccount extends StatefulWidget {
   State<DeleteAccount> createState() => _DeleteAccountState();
 }
 
-class _DeleteAccountState extends State<DeleteAccount> with AppMessages {
+class _DeleteAccountState extends State<DeleteAccount>
+    with AppMessages, Loader, NavigateTo {
   void _showDeleteAccountDialog() {
     showCustomDialog(
       children: [
@@ -32,7 +37,10 @@ class _DeleteAccountState extends State<DeleteAccount> with AppMessages {
               ),
 
               const SizedBox(height: 30),
-              ElevatedButton(onPressed: () {}, child: const Text("Excluir")),
+              ElevatedButton(
+                onPressed: _deleteAccount,
+                child: const Text("Excluir"),
+              ),
 
               TextButton(
                 onPressed: () {
@@ -47,8 +55,36 @@ class _DeleteAccountState extends State<DeleteAccount> with AppMessages {
     );
   }
 
-  void _deleteAccount() {
+  void _deleteAccount() async {
     var ctrl = context.read<UserController>();
+    try {
+      showLoader();
+      await ctrl.deleteAccount().whenComplete(() {
+        hideLoader();
+      });
+      navigateTo("/auth_options");
+    } on TokenException {
+      _expiredSessionDialog();
+    } catch (e) {
+      showCustomDialog(
+        children: [
+          DialogInformationWidget(message: e.toString(), title: "Beltran"),
+        ],
+      );
+    }
+  }
+
+  void _expiredSessionDialog() {
+    showCustomDialog(
+      children: [
+        DialogInformationWidget(
+          message: "Sua sessão expirou, por favor faça login novamente",
+          title: "Beltran",
+        ),
+      ],
+    ).then((_) {
+      navigateTo("/auth_login");
+    });
   }
 
   @override

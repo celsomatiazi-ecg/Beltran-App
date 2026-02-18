@@ -1,12 +1,11 @@
 import 'dart:developer';
 
-import 'package:flutter/material.dart';
-
 import '/data/models/user_model.dart';
 import '/data/repositories/user_repository.dart';
+import '/ui/app_controllers/base_controller.dart';
 import '../../data/exceptions/exceptions.dart';
 
-final class UserController extends ChangeNotifier {
+final class UserController extends BaseController {
   final UserRepository userRepository;
   UserController(this.userRepository);
 
@@ -35,12 +34,19 @@ final class UserController extends ChangeNotifier {
     }
   }
 
+  Future updatePassword({
+    required String currentPassword,
+    required String password,
+  }) async {
+    await request(
+      () => userRepository.postUpdatePassword(
+        currentPassword: currentPassword,
+        password: password,
+      ),
+    );
+  }
+
   Future<void> deleteAccount() async {
-    try {
-      await userRepository.deleteUser();
-    } on AppException catch (e, s) {
-      log("DELETE ACCOUNT", error: e.toString(), stackTrace: s);
-      throw mapErrorToMessage(e);
-    }
+    await request(() => userRepository.deleteUser());
   }
 }

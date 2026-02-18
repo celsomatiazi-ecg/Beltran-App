@@ -89,14 +89,6 @@ class AuthRepository implements IAuthRepository {
         headers: {"Content-Type": "application/json; charset=UTF-8"},
         body: {"code": code, "cpf": cpf},
       );
-      // await secureStorageService.write(
-      //   key: LocalStorageConstants.accessToken,
-      //   value: body["access"],
-      // );
-      // await secureStorageService.write(
-      //   key: LocalStorageConstants.refreshToken,
-      //   value: body["refresh"],
-      // );
     } catch (e) {
       rethrow;
     }

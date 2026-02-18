@@ -5,6 +5,7 @@ import 'package:utils_tool_kit/utils_tool_kit.dart';
 
 import '/ui/app_components/custom_background_widget.dart';
 import '/ui/app_constants/app_style.dart';
+import '../../data/models/client_model.dart';
 import '../register_client/client_instructions_widget.dart';
 
 class QrCodeScreen extends StatefulWidget {
@@ -27,9 +28,16 @@ class _QrCodeScreenState extends State<QrCodeScreen> with AppMessages {
     );
   }
 
+  String _getFormatedCode(ClientModel client) {
+    final String secretKey = client.secret ?? "";
+    final String issuer = "Beltran";
+    final String userEmail = client.email;
+    return "otpauth://totp/$issuer:$userEmail?secret=$secretKey&issuer=$issuer";
+  }
+
   @override
   Widget build(BuildContext context) {
-    String code = ModalRoute.of(context)!.settings.arguments as String;
+    var client = ModalRoute.of(context)!.settings.arguments as ClientModel;
 
     return Scaffold(
       appBar: AppBar(),
@@ -67,7 +75,7 @@ class _QrCodeScreenState extends State<QrCodeScreen> with AppMessages {
               width: context.percentWidth(.65),
               height: context.percentWidth(.65),
               child: QrImageView(
-                data: code,
+                data: _getFormatedCode(client),
                 version: QrVersions.auto, // Ajusta a densidade automaticamente
                 //size: 300.0,
                 gapless: true,
@@ -84,7 +92,11 @@ class _QrCodeScreenState extends State<QrCodeScreen> with AppMessages {
             ),
 
             const SizedBox(height: 30),
-            Text(code, textAlign: TextAlign.center, style: AppStyle.body),
+            Text(
+              client.secret ?? "",
+              textAlign: TextAlign.center,
+              style: AppStyle.body,
+            ),
             SizedBox(height: 20),
 
             Row(
@@ -97,7 +109,7 @@ class _QrCodeScreenState extends State<QrCodeScreen> with AppMessages {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppStyle.primaryColor,
                     ),
-                    onPressed: () => _copyToClipboard(code),
+                    onPressed: () => _copyToClipboard(client.secret ?? ""),
                     child: Text("Copiar"),
                   ),
                 ),

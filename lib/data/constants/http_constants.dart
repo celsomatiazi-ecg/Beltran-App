@@ -17,6 +17,7 @@ class HttpConstants {
   static String clients = "$baseUrlDX/client/list";
   static String userData = "$baseUrlDX/user";
   static String updateUserData = "$baseUrlDX/user/update";
+  static String updatePassword = "$baseUrlDX/user/update-password";
   static String clientCode = "$baseUrlDX/client/code";
   static String resendSecurityCode = "$baseUrlDX/user/code/resend";
 

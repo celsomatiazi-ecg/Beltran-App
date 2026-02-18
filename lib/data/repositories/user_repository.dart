@@ -3,20 +3,22 @@ import 'dart:developer';
 import '/data/models/user_model.dart';
 import '../../services/http/http_client.dart';
 import '../../services/http/http_interceptor.dart';
+import '../../services/secure_storage_service.dart';
 import '../constants/http_constants.dart';
 
 final class UserRepository {
-  final IHttpClient client;
-  final IHttpInterceptor httpInterceptor;
+  final IHttpClient _client;
+  final IHttpInterceptor _httpInterceptor;
+  final ISecureStorageService _storage;
 
-  UserRepository(this.client, this.httpInterceptor);
+  UserRepository(this._client, this._httpInterceptor, this._storage);
 
   UserModel? user;
 
   Future<UserModel> getUserData() async {
     try {
-      return await httpInterceptor.handleAuth((headers) async {
-        var response = await client.get(
+      return await _httpInterceptor.handleAuth((headers) async {
+        var response = await _client.get(
           url: HttpConstants.userData,
           headers: headers,
         );
@@ -30,8 +32,8 @@ final class UserRepository {
 
   Future updateUserData(UserModel userData) async {
     try {
-      return await httpInterceptor.handleAuth((headers) async {
-        return client.post(
+      return await _httpInterceptor.handleAuth((headers) async {
+        return _client.post(
           url: HttpConstants.updateUserData,
           headers: headers,
           body: userData.toMap(),
@@ -45,11 +47,31 @@ final class UserRepository {
 
   Future deleteUser() async {
     try {
-      return await httpInterceptor.handleAuth((headers) async {
-        return client.get(url: HttpConstants.updateUserData, headers: headers);
+      var response = await _httpInterceptor.handleAuth((headers) async {
+        return _client.delete(url: HttpConstants.userData, headers: headers);
+      });
+      _storage.deleteAll();
+      return response;
+    } catch (e, s) {
+      log("DELETE USER REPO", error: e.toString(), stackTrace: s);
+      rethrow;
+    }
+  }
+
+  Future postUpdatePassword({
+    required String currentPassword,
+    required String password,
+  }) async {
+    try {
+      return await _httpInterceptor.handleAuth((headers) async {
+        return await _client.post(
+          url: HttpConstants.updatePassword,
+          headers: headers,
+          body: {"password": currentPassword, "newPassword": password},
+        );
       });
     } catch (e, s) {
-      log("POST UpdateUserData REPO", error: e.toString(), stackTrace: s);
+      log("Update PASSWORD", error: e.toString(), stackTrace: s);
       rethrow;
     }
   }

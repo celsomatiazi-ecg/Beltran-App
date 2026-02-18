@@ -56,7 +56,6 @@ class _LoginScreenState extends State<LoginScreen> with AppMessages, Loader {
           .whenComplete(() {
             hideLoader();
           });
-
       _navigateTo();
     } catch (e, s) {
       log("LOGIN ERROR", error: e, stackTrace: s);

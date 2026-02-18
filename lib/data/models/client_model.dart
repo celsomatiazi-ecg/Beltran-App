@@ -24,6 +24,11 @@ final class ClientModel {
   }
 
   factory ClientModel.fromMap(Map<String, dynamic> map) {
+    String name = "null";
+    if (map['user'] != null) {
+      name = map['user']["name"] ?? "";
+    }
+
     return ClientModel(
       name: map['name'] as String,
       cpf: map['cpf'] as String,
@@ -31,7 +36,8 @@ final class ClientModel {
       email: map['email'] as String,
       id: map['id'] ?? "",
       createdAtt: DateTime.parse(map['createdAt']),
-      responsible: map['user']["name"] ?? "",
+      //responsible: map['user']["name"] ??= "",
+      responsible: name,
       secret: map["secret"] ?? "",
     );
   }
